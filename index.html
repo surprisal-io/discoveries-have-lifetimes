@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Discoveries Have Lifetimes — E-Values for Autonomous Discovery in Adversarial Environments</title>
+<meta name="description" content="A generator proposes candidate regimes, an e-process certifies that a regime is currently present, and an e-detector detects when it ceases to be current. Surprisal Labs, NeurIPS 2026 Workshop on E-Values.">
+<meta property="og:title" content="Discoveries Have Lifetimes">
+<meta property="og:description" content="E-values for autonomous discovery in adversarial environments. Surprisal Labs.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F3F2EE; --bg-2:#ECEAE4; --card:#FFFFFF;
+  --ink:#232323; --ink-2:#4B4B4B; --muted:#8A8983; --faint:#B9B7B0;
+  --line:#DEDCD5; --line-2:#E9E7E1;
+  --amber:#F5B335; --amber-ink:#B97A06; --amber-soft:#FDEBCB; --amber-wash:#FEF6E6;
+  --dark:#151515;
+  --sans:"Inter",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+  --display:"Inter Tight","Inter",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --serif:"Times New Roman",Times,serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+.wrap{max-width:1120px;margin:0 auto;padding:0 32px}
+.mono{font-family:var(--mono);font-size:12px;letter-spacing:0}
+.m{font-family:var(--serif);font-style:italic;font-size:1.08em}
+.m-up{font-family:var(--serif);font-size:1.08em}
+
+/* ---------- nav ---------- */
+nav{position:sticky;top:0;z-index:20;background:rgba(243,242,238,.86);backdrop-filter:blur(8px);border-bottom:1px solid transparent;transition:border-color .2s}
+nav.scrolled{border-color:var(--line)}
+nav .wrap{display:flex;align-items:center;justify-content:space-between;height:60px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;font-family:var(--display);font-weight:500;font-size:15px;color:var(--ink-2)}
+.navlinks{display:flex;gap:22px}
+.navlinks a{text-decoration:none;font-size:13px;color:var(--muted)}
+.navlinks a:hover{color:var(--ink)}
+
+/* ---------- hero ---------- */
+.hero{position:relative;overflow:hidden;padding:84px 0 92px;border-bottom:1px solid var(--line)}
+.hero svg.orbits{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.hero .wrap{position:relative;text-align:center}
+.venue{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--card);border-radius:4px;padding:4px 10px;color:var(--ink-2)}
+.venue i{width:8px;height:8px;background:var(--amber);display:inline-block}
+h1{font-family:var(--display);font-weight:500;color:#474747;letter-spacing:-.025em;line-height:1.04;font-size:clamp(44px,7vw,84px);margin:28px 0 14px}
+.subtitle{font-family:var(--display);font-size:clamp(19px,2.2vw,25px);color:var(--ink-2);margin:0 auto;max-width:760px;line-height:1.3}
+.authors{margin:34px 0 4px;font-size:17px;color:var(--ink)}
+.authors span+span:before{content:"·";margin:0 12px;color:var(--faint)}
+.affil{color:var(--muted);font-size:14px}
+.buttons{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:30px}
+.btn{display:inline-flex;align-items:center;gap:8px;text-decoration:none;font-size:14px;padding:9px 16px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;font-family:var(--sans);transition:border-color .15s,background .15s}
+.btn:hover{border-color:var(--faint)}
+.btn.primary{background:var(--dark);color:#fff;border-color:var(--dark)}
+.btn.primary:hover{background:#000}
+.btn.amber{background:var(--amber);border-color:var(--amber);color:#2a1d00}
+.btn svg{width:14px;height:14px}
+
+/* ---------- sections ---------- */
+section{padding:88px 0;border-bottom:1px solid var(--line)}
+.sec-head{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;margin-bottom:12px}
+h2{font-family:var(--display);font-weight:500;font-size:clamp(30px,3.6vw,42px);color:#4a4a4a;letter-spacing:-.02em;line-height:1.12;margin:0}
+.lede{color:var(--ink-2);font-size:17px;max-width:720px;margin:10px 0 0}
+.kicker{color:var(--muted);margin-bottom:14px;display:block}
+p{margin:0 0 1em}
+.prose{max-width:720px}
+.prose p{color:var(--ink-2)}
+.card{background:var(--card);border:1px solid var(--line-2);border-radius:12px;box-shadow:0 1px 2px rgba(0,0,0,.03)}
+
+/* abstract */
+.abstract{display:grid;grid-template-columns:1fr 1.25fr;gap:48px;align-items:start;margin-top:36px}
+.abstract blockquote{margin:0;font-family:var(--display);font-size:24px;line-height:1.35;color:var(--ink);letter-spacing:-.01em}
+.abstract blockquote em{font-style:normal;background:linear-gradient(transparent 62%,var(--amber-soft) 62%)}
+
+/* figure 1 */
+.fig{margin-top:44px;padding:28px 28px 18px}
+.fig svg{width:100%;height:auto;display:block}
+.caption{color:var(--muted);font-size:13px;margin-top:10px}
+.caption b{color:var(--ink-2);font-weight:500}
+
+/* registry mini (static) */
+.reg-static{margin-top:36px;max-width:560px}
+table{border-collapse:collapse;width:100%}
+th{font-family:var(--mono);font-weight:400;font-size:11px;color:var(--muted);text-align:left;padding:10px 14px;border-bottom:1px solid var(--line-2)}
+td{padding:11px 14px;border-bottom:1px solid var(--line-2);font-size:14px}
+tr:last-child td{border-bottom:0}
+.pill{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11px;padding:2px 8px;border-radius:999px;border:1px solid var(--line)}
+.pill:before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.pill.candidate{color:var(--muted)}
+.pill.current{color:var(--amber-ink);background:var(--amber-wash);border-color:var(--amber-soft)}
+.pill.expired{color:var(--faint);text-decoration:line-through}
+.pill.dropped{color:var(--faint)}
+
+/* why e-values */
+.transition{margin:40px 0 8px;display:flex;align-items:center;justify-content:center;gap:0;flex-wrap:wrap;font-size:20px}
+.transition .state{padding:10px 20px;border:1px solid var(--line);border-radius:999px;background:var(--card)}
+.transition .state.h{border-color:var(--amber);background:var(--amber-wash)}
+.transition .arrow{display:flex;flex-direction:column;align-items:center;padding:0 10px;min-width:150px}
+.transition .arrow span{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.transition .arrow i{display:block;width:100%;height:1px;background:var(--ink-2);position:relative;margin:6px 0}
+.transition .arrow i:after{content:"";position:absolute;right:-1px;top:-4px;border:4.5px solid transparent;border-left:7px solid var(--ink-2);border-right:0}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:36px}
+.tool{padding:26px 28px}
+.tool header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.tool h3{font-family:var(--display);font-weight:500;font-size:22px;margin:0;color:var(--ink)}
+.tool .q{color:var(--muted)}
+.tool .formula{background:var(--bg);border-radius:8px;padding:14px 16px;margin:16px 0 12px;font-size:17px;text-align:center}
+.tool p{color:var(--ink-2);font-size:15px;margin:0}
+.hyp{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:14px;margin-top:14px}
+.hyp .mono{color:var(--muted);padding-top:2px}
+.facts{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:20px}
+.fact{padding:22px 24px}
+.fact h4{margin:0 0 6px;font-family:var(--display);font-weight:500;font-size:17px}
+.fact p{font-size:14px;color:var(--ink-2);margin:0}
+
+/* ---------- demo ---------- */
+#demo{background:var(--bg-2)}
+.demo{margin-top:36px;display:grid;grid-template-columns:1fr 300px;gap:16px;align-items:start}
+.panel{padding:18px 20px}
+.toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line-2);flex-wrap:wrap}
+.crumbs{display:flex;align-items:center;gap:8px;color:var(--muted)}
+.crumbs b{color:var(--ink);font-weight:500}
+.tbtns{display:flex;gap:6px;flex-wrap:wrap}
+.tb{font-family:var(--sans);font-size:13px;border:1px solid var(--line);background:var(--card);border-radius:7px;padding:6px 11px;cursor:pointer;color:var(--ink);display:inline-flex;align-items:center;gap:6px}
+.tb:hover{border-color:var(--faint)}
+.tb.on{background:var(--dark);color:#fff;border-color:var(--dark)}
+.tb.adv{border-color:var(--amber);color:var(--amber-ink)}
+.tb.adv:hover{background:var(--amber-wash)}
+.tb:disabled{opacity:.4;cursor:default}
+
+.pipeline{display:flex;align-items:center;gap:6px;padding:14px 16px;border-bottom:1px solid var(--line-2);flex-wrap:wrap}
+.chip{font-family:var(--mono);font-size:11px;padding:5px 10px;border-radius:6px;border:1px solid var(--line);color:var(--muted);transition:all .25s;white-space:nowrap}
+.chip.op{border-style:dashed}
+.chip.lit{background:var(--dark);border-color:var(--dark);color:#fff}
+.chip.lit.amber{background:var(--amber);border-color:var(--amber);color:#2a1d00}
+.pipeline .ar{color:var(--faint);font-size:12px}
+
+.chartbox{position:relative;padding:10px 6px 4px}
+canvas{display:block;width:100%}
+.readout{position:absolute;right:16px;top:14px;color:var(--muted);text-align:right;pointer-events:none;line-height:1.5}
+.metrics{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--line-2)}
+.metric{padding:14px 18px;border-right:1px solid var(--line-2)}
+.metric:last-child{border-right:0}
+.metric .v{font-family:var(--display);font-size:28px;font-weight:500;color:var(--ink);line-height:1.1}
+.metric .v small{font-size:13px;color:var(--muted);font-weight:400;margin-left:4px}
+.metric .bar{height:2px;background:var(--line-2);margin:8px 0 6px;position:relative;overflow:hidden}
+.metric .bar i{position:absolute;left:0;top:0;bottom:0;background:var(--amber);width:0;transition:width .4s}
+.metric .l{font-size:12px;color:var(--muted)}
+
+.side{display:flex;flex-direction:column;gap:16px}
+.side h5{margin:0 0 12px;font-family:var(--mono);font-weight:400;font-size:11px;color:var(--muted)}
+.ctl{margin-bottom:14px}
+.ctl label{display:flex;justify-content:space-between;font-size:13px;color:var(--ink-2);margin-bottom:4px}
+.ctl label .mono{color:var(--ink)}
+input[type=range]{width:100%;accent-color:var(--amber);margin:0}
+.toggle{display:flex;align-items:center;justify-content:space-between;font-size:13px;color:var(--ink-2);margin-bottom:10px;cursor:pointer}
+.toggle input{accent-color:var(--amber)}
+.seg{display:flex;border:1px solid var(--line);border-radius:7px;overflow:hidden}
+.seg button{flex:1;border:0;background:var(--card);padding:5px 0;font-family:var(--mono);font-size:11px;cursor:pointer;color:var(--muted)}
+.seg button.on{background:var(--dark);color:#fff}
+.log{font-family:var(--mono);font-size:11px;line-height:1.7;max-height:208px;overflow:auto;color:var(--ink-2)}
+.log div{display:grid;grid-template-columns:64px 1fr;gap:6px;border-bottom:1px dashed var(--line-2);padding:2px 0}
+.log div span:first-child{color:var(--faint)}
+.log .hl{color:var(--amber-ink)}
+.log .empty{display:block;color:var(--faint);border:0}
+#registry td{font-size:13px;padding:8px 12px}
+#registry th{padding:8px 12px}
+.below{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+.check{padding:20px 22px}
+.check h4{margin:0 0 4px;font-family:var(--display);font-weight:500;font-size:18px}
+.check p{font-size:14px;color:var(--ink-2);margin:0 0 14px}
+.check .res{display:flex;align-items:baseline;gap:14px;margin-top:14px;min-height:40px}
+.check .res .big{font-family:var(--display);font-size:30px;font-weight:500}
+.check .res .sub{font-size:13px;color:var(--muted)}
+.hint{color:var(--muted);font-size:13px;margin-top:14px}
+
+/* lifecycle steps */
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:36px}
+.step{padding:22px 22px 20px;position:relative}
+.step .n{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.step h4{margin:6px 0 6px;font-family:var(--display);font-weight:500;font-size:19px}
+.step p{font-size:14px;color:var(--ink-2);margin:0}
+.step .num{display:flex;align-items:baseline;gap:8px;margin-top:14px;padding-top:12px;border-top:1px solid var(--line-2)}
+.step .num b{font-family:var(--display);font-size:26px;font-weight:500}
+.step .num span{font-size:12px;color:var(--muted)}
+.step .num i{display:block;height:2px;width:36px;background:var(--amber);align-self:center;margin-left:auto}
+
+/* open problems */
+.open{display:grid;grid-template-columns:repeat(2,1fr);gap:0;margin-top:36px;border-top:1px solid var(--line)}
+.open div{padding:22px 24px 22px 0;border-bottom:1px solid var(--line)}
+.open div:nth-child(odd){padding-right:32px;border-right:1px solid var(--line)}
+.open div:nth-child(even){padding-left:32px}
+.open h4{margin:0 0 4px;font-family:var(--display);font-weight:500;font-size:18px}
+.open p{color:var(--ink-2);font-size:15px;margin:0}
+.closing{font-family:var(--display);font-size:clamp(24px,3vw,34px);line-height:1.25;letter-spacing:-.015em;color:var(--ink);max-width:880px;margin:56px 0 0}
+.closing em{font-style:normal;background:linear-gradient(transparent 62%,var(--amber-soft) 62%)}
+
+/* bibtex */
+pre{margin:0;padding:22px 24px;font-family:var(--mono);font-size:13px;line-height:1.65;overflow:auto;color:var(--ink-2)}
+.bib{position:relative;margin-top:28px}
+.bib .tb{position:absolute;right:12px;top:12px}
+.refs{margin-top:44px;columns:2;column-gap:48px;font-size:13px;color:var(--muted)}
+.refs p{break-inside:avoid;margin:0 0 10px}
+
+footer{padding:40px 0 60px}
+.foot{display:grid;grid-template-columns:1.2fr 1fr 1fr 1fr;gap:24px;align-items:start;padding:22px 26px}
+.foot .lbl{font-family:var(--mono);font-size:10px;color:var(--muted)}
+.foot .nm{font-size:14px;color:var(--ink)}
+.foot .em{font-size:12px;color:var(--muted);text-decoration:none}
+
+@media (max-width:900px){
+  .abstract,.two,.below{grid-template-columns:1fr}
+  .demo{grid-template-columns:1fr}
+  .facts,.steps{grid-template-columns:1fr 1fr}
+  .open{grid-template-columns:1fr}
+  .open div:nth-child(odd){border-right:0;padding-right:0}
+  .open div:nth-child(even){padding-left:0}
+  .foot{grid-template-columns:1fr 1fr}
+  .refs{columns:1}
+  .navlinks a:not(.keep){display:none}
+}
+@media (max-width:600px){
+  .wrap{padding:0 18px}
+  .facts,.steps,.metrics{grid-template-columns:1fr}
+  .metric{border-right:0;border-bottom:1px solid var(--line-2)}
+  .transition .arrow{min-width:90px}
+}
+</style>
+</head>
+<body>
+
+<!-- Logo symbol: 3x3 grid, top-right cell in amber -->
+<svg width="0" height="0" style="position:absolute">
+  <symbol id="logo" viewBox="0 0 30 30">
+    <rect x="0" y="9" width="8" height="8" rx=".8" fill="#3A3A3A"/><rect x="10" y="9" width="8" height="8" rx=".8" fill="#3A3A3A"/>
+    <rect x="0" y="0" width="8" height="8" rx=".8" fill="#3A3A3A"/><rect x="10" y="0" width="8" height="8" rx=".8" fill="#3A3A3A"/>
+    <rect x="21" y="-1.5" width="8" height="8" rx=".8" fill="#F5B335"/>
+    <rect x="20" y="9" width="8" height="8" rx=".8" fill="#3A3A3A"/>
+    <rect x="0" y="19" width="8" height="8" rx=".8" fill="#3A3A3A"/><rect x="10" y="19" width="8" height="8" rx=".8" fill="#3A3A3A"/><rect x="20" y="19" width="8" height="8" rx=".8" fill="#3A3A3A"/>
+  </symbol>
+</svg>
+
+<nav id="nav">
+  <div class="wrap">
+    <a class="brand" href="https://surprisal.io"><svg width="20" height="20"><use href="#logo"/></svg>Surprisal Labs</a>
+    <div class="navlinks">
+      <a href="#idea">Setting</a>
+      <a href="#why">Why e-values</a>
+      <a href="#demo" class="keep">Demo</a>
+      <a href="#cite" class="keep">Cite</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ================= HERO ================= -->
+<header class="hero">
+  <svg class="orbits" viewBox="0 0 1400 620" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <g fill="none" stroke="#2b2b2b" stroke-opacity=".07">
+      <ellipse cx="700" cy="560" rx="760" ry="200"/>
+      <ellipse cx="700" cy="560" rx="600" ry="158"/>
+      <ellipse cx="700" cy="560" rx="440" ry="116"/>
+      <ellipse cx="700" cy="560" rx="290" ry="76"/>
+      <ellipse cx="700" cy="560" rx="150" ry="40"/>
+    </g>
+    <g stroke="#2b2b2b" stroke-opacity=".35" stroke-width="1">
+      <line x1="150" y1="500" x2="150" y2="190"/><circle cx="150" cy="500" r="2.5" fill="#2b2b2b" fill-opacity=".35"/>
+      <line x1="245" y1="540" x2="245" y2="430"/><circle cx="245" cy="540" r="2.5" fill="#2b2b2b" fill-opacity=".35"/>
+      <line x1="1120" y1="560" x2="1120" y2="470"/><circle cx="1120" cy="560" r="2.5" fill="#2b2b2b" fill-opacity=".35"/>
+      <line x1="1290" y1="520" x2="1290" y2="300"/><circle cx="1290" cy="520" r="2.5" fill="#2b2b2b" fill-opacity=".35"/>
+    </g>
+    <g>
+      <line x1="1200" y1="490" x2="1200" y2="140" stroke="#F5B335" stroke-width="1.2"/>
+      <rect x="1193" y="133" width="14" height="14" transform="rotate(45 1200 140)" fill="#F5B335"/>
+      <circle cx="1200" cy="490" r="3" fill="#F5B335"/>
+    </g>
+    <g font-family="JetBrains Mono, monospace" font-size="11" fill="#5a5a5a">
+      <rect x="78" y="168" width="148" height="20" fill="#fff" stroke="#cfcdc6"/><text x="86" y="182">H-0141 │ expired</text>
+      <rect x="1226" y="280" width="118" height="20" fill="#fff" stroke="#cfcdc6"/><text x="1234" y="294">e-detector Rₜ</text>
+      <rect x="1110" y="104" width="184" height="20" fill="#fff" stroke="#cfcdc6"/><text x="1118" y="118">H-0147 │ current · Mₜ≥20</text>
+    </g>
+  </svg>
+  <div class="wrap">
+    <a class="venue mono" href="https://e-values-workshop.github.io/" style="text-decoration:none"><i></i>NeurIPS 2026 · Workshop on E-Values</a>
+    <h1>Discoveries Have<br>Lifetimes</h1>
+    <p class="subtitle">E-values for autonomous discovery in adversarial environments</p>
+    <div class="authors"><span>Pavel Goldman-Kalaydin</span><span>Vyacheslav Shebanov</span></div>
+    <div class="affil">Surprisal Labs</div>
+    <div class="buttons">
+      <a class="btn primary" href="https://www.alphaxiv.org/abs/2611.e-values-autonomous-discovery-adversarial-environments"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 1.5h5l3 3v10H4z"/><path d="M9 1.5v3h3"/></svg>Paper</a>
+      <a class="btn" href="https://e-values-workshop.github.io/">Workshop ↗</a>
+      <a class="btn amber" href="#demo">Interactive demo ↓</a>
+    </div>
+  </div>
+</header>
+
+<!-- ================= IDEA ================= -->
+<section id="idea">
+  <div class="wrap">
+    <h2>Setting: discoveries with lifetimes</h2>
+    <div class="abstract">
+      <blockquote>The relevant unit is not <em>“H is true,”</em> but <em>“H describes the world during this specific time interval.”</em></blockquote>
+      <div class="prose">
+        <p>Open-ended discovery systems search for unexpected structure, propose candidate hypotheses and gather evidence for them, instead of only answering questions or validating hypotheses supplied by a user. In adversarial environments, what they find can stop being true. In fraud, for example, attackers exploit a transaction pattern until it is detected or blocked, then change timing, account structure or money flow.</p>
+        <p>Existing systems implicitly treat a validated finding as permanent: once added to the set of discoveries, it is not revisited. We instead model a discovery as a claim about the <i>current</i> data-generating process, with an onset, an expiration and a lifetime in between. The framework has three parts: a <b>generator</b> proposes candidate regimes, an <b>e-process</b> accumulates evidence that a proposed regime is currently present, and an <b>e-detector</b> detects when it stops being present. The statistical tools are existing ones; the contribution is to treat discovery as a temporal process and connect these tools into one lifecycle.</p>
+      </div>
+    </div>
+
+    <div class="card fig">
+      <svg viewBox="0 0 1000 170" aria-label="Regimes with lifetimes">
+        <defs>
+          <pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#F5B335" stroke-opacity=".35" stroke-width="2"/></pattern>
+        </defs>
+        <g font-family="Inter, sans-serif" font-size="13" fill="#4B4B4B" text-anchor="middle">
+          <rect x="20" y="30" width="170" height="44" rx="6" fill="#F3F2EE"/><text x="105" y="57">baseline</text>
+          <rect x="190" y="30" width="250" height="44" rx="6" fill="#FEF6E6" stroke="#F5B335"/><text x="315" y="57">H₁ active: Pₜ ∈ 𝒫<tspan font-size="10" dy="3">H₁</tspan></text>
+          <rect x="440" y="30" width="190" height="44" rx="6" fill="#F3F2EE"/><text x="535" y="57">baseline</text>
+          <rect x="630" y="30" width="250" height="44" rx="6" fill="url(#hatch)" stroke="#F5B335" stroke-dasharray="4 3"/><text x="755" y="57">H₂ active: Pₜ ∈ 𝒫<tspan font-size="10" dy="3">H₂</tspan></text>
+          <rect x="880" y="30" width="100" height="44" rx="6" fill="#F3F2EE"/><text x="930" y="57">…</text>
+        </g>
+        <line x1="20" y1="98" x2="975" y2="98" stroke="#4B4B4B"/><path d="M975 94 L983 98 L975 102 Z" fill="#4B4B4B"/>
+        <text x="983" y="118" font-family="JetBrains Mono, monospace" font-size="11" fill="#8A8983" text-anchor="end">time t</text>
+        <g font-family="JetBrains Mono, monospace" font-size="11" fill="#8A8983" text-anchor="middle">
+          <line x1="190" y1="92" x2="190" y2="104" stroke="#232323"/><text x="190" y="120">τ<tspan font-size="8" dy="-5">on</tspan></text>
+          <line x1="440" y1="92" x2="440" y2="104" stroke="#232323"/><text x="440" y="120">τ<tspan font-size="8" dy="-5">off</tspan></text>
+        </g>
+        <path d="M192 138 Q192 146 200 146 L305 146 Q315 146 315 154 Q315 146 325 146 L430 146 Q438 146 438 138" fill="none" stroke="#B97A06"/>
+        <text x="315" y="168" font-family="JetBrains Mono, monospace" font-size="11" fill="#B97A06" text-anchor="middle">lifetime of H₁</text>
+      </svg>
+      <div class="caption"><b>Latent strategies with lifetimes.</b> Each regime holds only on an interval, opening at τ<sup>on</sup> and closing at τ<sup>off</sup>. A discovery H asserts that the current law P<sub>t</sub> belongs to a family 𝒫<sub>H</sub>; it is correct only while the regime is active.</div>
+    </div>
+
+    <div class="reg-static card">
+      <table>
+        <thead><tr><th>discovery</th><th>evidence</th><th>status</th></tr></thead>
+        <tbody>
+          <tr><td>H₁</td><td>strong</td><td><span class="pill expired">expired</span></td></tr>
+          <tr><td>H₂</td><td>moderate</td><td><span class="pill current">current</span></td></tr>
+          <tr><td>H₃</td><td>accumulating</td><td><span class="pill candidate">candidate</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="hint">A registry that records lifecycle status. Generation proposes candidates, evidence promotes them to current discoveries, and expired discoveries are retired while their evidence is kept.</p>
+  </div>
+</section>
+
+<!-- ================= WHY E-VALUES ================= -->
+<section id="why">
+  <div class="wrap">
+    <h2>Why e-values: establishment and expiration</h2>
+    <p class="lede">An e-variable is a non-negative random variable whose expectation under the null is at most one. Products of conditional e-values form e-processes, which remain valid under optional stopping. By Ville’s inequality, rejecting when an e-process crosses 1/α gives an anytime-valid test at level α. A temporal discovery involves two changes in the data-generating process, and each is handled by an existing e-value tool.</p>
+
+    <div class="transition">
+      <span class="state">P<sub>baseline</sub></span>
+      <span class="arrow"><span>onset</span><i></i><span>not observed</span></span>
+      <span class="state h">P<sub>H</sub></span>
+      <span class="arrow"><span>expiration</span><i></i><span>monitored</span></span>
+      <span class="state">P<sub>¬H</sub></span>
+    </div>
+
+    <div class="two">
+      <div class="card tool">
+        <header><h3>Establishment</h3><span class="mono q">is the regime present?</span></header>
+        <p>By the time the generator proposes H, the strategy may already have been active for some time, and the system did not know what to look for before then. We therefore do not try to locate the onset retrospectively. An e-process started <i>after</i> the proposal accumulates prospective evidence that H currently holds; the data used to propose H are not reused.</p>
+        <div class="formula"><span class="m">M<sub>t</sub></span> = <span style="font-size:1.25em">∏</span><sub class="m">s&gt;t<sub>prop</sub></sub> <span class="m-up">(1 + </span><span class="m">λ<sub>s</sub></span><span class="m-up">(</span><span class="m">Z<sub>s</sub></span> − <span class="m">p<sub>H</sub></span><span class="m-up">))</span></div>
+        <div class="hyp"><span class="mono">H₀</span><span>P<sub>t</sub> ∉ 𝒫<sub>H</sub> &nbsp;·&nbsp; establish H when M<sub>t</sub> ≥ 1/α</span></div>
+      </div>
+      <div class="card tool">
+        <header><h3>Expiration</h3><span class="mono q">did the regime end?</span></header>
+        <p>Once H is established, the system knows what to monitor; only the time of departure is unknown. Null and alternative swap roles: the null is now that H still holds. An e-detector (Shin, Ramdas &amp; Rinaldo, 2023) runs e-processes started at every possible change time and raises an alarm when the regime has likely ended.</p>
+        <div class="formula"><span class="m">R<sub>t</sub></span> = <span class="m-up">(1 + </span><span class="m">R<sub>t−1</sub></span><span class="m-up">)(1 + </span><span class="m">γ</span><span class="m-up">(</span><span class="m">p<sub>H</sub></span> − <span class="m">Z<sub>t</sub></span><span class="m-up">))</span></div>
+        <div class="hyp"><span class="mono">H₀</span><span>P<sub>t</sub> ∈ 𝒫<sub>H</sub> &nbsp;·&nbsp; alarm when R<sub>t</sub> ≥ A; average run length to a false alarm ≥ A</span></div>
+      </div>
+    </div>
+
+    <div class="facts">
+      <div class="card fact"><h4>Anytime validity</h4><p>Evidence can be checked after every observation, and no stopping rule has to be fixed in advance.</p></div>
+      <div class="card fact"><h4>Existing constructions</h4><p>For a one-sided constraint on the mean of a bounded statistic, standard betting constructions give test supermartingales for both roles. We do not introduce a new e-value.</p></div>
+      <div class="card fact"><h4>No labels needed</h4><p>In the fraud example the monitored claim concerns an observable predicate Z<sub>H</sub>, so monitoring does not require fraud labels.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= DEMO ================= -->
+<section id="demo">
+  <div class="wrap">
+    <div class="sec-head">
+      <div>
+        <h2>Interactive demo: the lifecycle on a synthetic stream</h2>
+        <p class="lede">Each simulated transaction either matches the predicate Z<sub>H</sub> = 1{amount ≥ 5000} or not. Legitimate traffic matches at about 1%. At times the system does not know, a simulated laundering ring becomes active and raises the match rate. The system sees only the stream: it estimates a baseline, proposes a candidate H when the recent match rate is unusually high, runs an e-process to establish that the rate is currently at least p<sub>H</sub> = 0.03, and then runs an e-detector to decide when this stops being true.</p>
+        <p class="lede" style="margin-top:12px">Shaded bands show the latent ground truth, which only the simulation knows. Compare them with the vertical markers, which show what the system concluded and when. Everything runs in your browser.</p>
+      </div>
+    </div>
+
+    <div class="demo">
+      <div class="card" style="overflow:hidden">
+        <div class="toolbar">
+          <div class="crumbs mono"><svg width="14" height="14"><use href="#logo"/></svg> synthetic stream <span>/</span> <b id="crumbH">stream</b> <span>/</span> <span id="crumbT">t = 0</span></div>
+          <div class="tbtns">
+            <button class="tb on" id="play">▶ Play</button>
+            <button class="tb" id="reset">↺ New stream</button>
+            <button class="tb adv" id="launch" title="Simulation control: activate a laundering ring. The discovery system is not told.">Activate ring</button>
+            <button class="tb adv" id="abandon" disabled title="Simulation control: deactivate the ring. The discovery system is not told.">Deactivate ring</button>
+          </div>
+        </div>
+        <div class="pipeline" id="pipeline">
+          <span class="chip" data-s="generate" title="Estimating the baseline, then scanning for an unusually high match rate">GENERATE</span><span class="ar">→</span>
+          <span class="chip op" data-s="eproc" title="Candidate: accumulating evidence that the regime is currently present">e-process</span><span class="ar">→</span>
+          <span class="chip" data-s="discovery" title="Established: the claim is in the registry as current">DISCOVERY</span><span class="ar">→</span>
+          <span class="chip op" data-s="edet" title="Monitoring whether the established regime has ended">e-detector</span><span class="ar">→</span>
+          <span class="chip" data-s="expired" title="Expiration alarm raised; the claim is retired and search resumes">EXPIRED</span><span class="ar">↺</span>
+        </div>
+        <div class="chartbox">
+          <canvas id="chart" height="420"></canvas>
+          <div class="readout mono" id="readout"></div>
+        </div>
+        <div class="metrics">
+          <div class="metric"><div class="v" id="mProp">—</div><div class="bar"><i id="bProp"></i></div><div class="l">Proposal delay: transactions from the (latent) onset to the proposal of H</div></div>
+          <div class="metric"><div class="v" id="mEst">—</div><div class="bar"><i id="bEst"></i></div><div class="l">Establishment time: transactions from the proposal until M<sub>t</sub> ≥ 1/α</div></div>
+          <div class="metric"><div class="v" id="mExp">—</div><div class="bar"><i id="bExp"></i></div><div class="l">Expiration delay: transactions from the (latent) end of the ring to the e-detector alarm</div></div>
+        </div>
+        <div class="panel" style="border-top:1px solid var(--line-2)">
+          <h5 class="mono" style="margin:0 0 8px;font-weight:400;font-size:11px;color:var(--muted)">event log</h5>
+          <div class="log" id="log" style="max-height:150px"><span class="empty">waiting for the stream…</span></div>
+        </div>
+      </div>
+
+      <div class="side">
+        <div class="card panel">
+          <h5>simulated adversary (latent)</h5>
+          <div class="ctl"><label title="Match rate of Z_H while a ring is active (background is about 0.01)">Match rate when active <span class="mono" id="vP1">0.060</span></label><input type="range" id="p1" min="0.035" max="0.12" step="0.005" value="0.06"></div>
+          <div class="ctl"><label title="How long the ring continues after H is established and a blocking rule is deployed">Ring stops after block <span class="mono" id="vDelay">400 tx</span></label><input type="range" id="delay" min="0" max="2000" step="50" value="400"></div>
+          <label class="toggle">Start new rings automatically <input type="checkbox" id="auto" checked></label>
+          <label class="toggle">Ring never stops <input type="checkbox" id="persist"></label>
+          <h5 style="margin-top:18px">statistical settings</h5>
+          <div class="ctl"><label>Level α <span class="mono" id="vAlpha">0.05 → 1/α = 20</span></label>
+            <div class="seg" id="alphaSeg"><button data-a="0.1">0.10</button><button data-a="0.05" class="on">0.05</button><button data-a="0.01">0.01</button></div></div>
+          <div class="ctl"><label>Playback speed <span class="mono" id="vSpeed">40 tx/frame</span></label><input type="range" id="speed" min="5" max="200" step="5" value="40"></div>
+          <label class="toggle">Show latent ground truth <input type="checkbox" id="truth" checked></label>
+        </div>
+        <div class="card panel">
+          <h5>discovery registry</h5>
+          <table id="registry"><thead><tr><th>id</th><th>evidence</th><th>status</th></tr></thead><tbody><tr><td colspan="3" style="color:var(--faint)">empty</td></tr></tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <div class="below">
+      <div class="card check">
+        <span class="mono" style="color:var(--muted)">validity check · establishment</span>
+        <h4>False establishment under the null</h4>
+        <p>500 streams with match rate exactly p<sub>H</sub> = 0.03, the boundary of the null and its least favourable case. The e-process runs for 5,000 transactions and is checked after every one. Ville’s inequality bounds the probability of ever crossing 1/α by α. The observed fraction varies from run to run.</p>
+        <button class="tb" id="runNull">Run 500 null streams</button>
+        <div class="res" id="resNull"></div>
+      </div>
+      <div class="card check">
+        <span class="mono" style="color:var(--muted)">validity check · expiration</span>
+        <h4>False expiration while the ring persists</h4>
+        <p>200 streams in which the ring stays active at the current match rate. Each is first established, then the e-detector monitors 5,000 further transactions. The guarantee here is of a different kind: the average run length to a false alarm is at least A = 10⁴. This controls how often false alarms occur, not the probability of one within a fixed window.</p>
+        <button class="tb" id="runPersist">Run 200 persistent streams</button>
+        <div class="res" id="resPersist"></div>
+      </div>
+    </div>
+    <p class="hint">Simulation details. The setup follows Appendix A of the paper on a smaller stream (16,000 transactions) with simulated rather than gen-fraud-graph data, so the numbers will differ from the paper’s run. Background match rate ≈ 0.01; actionability level p<sub>H</sub> = 0.03; baseline estimated on the first 3,000 transactions; a candidate is proposed when the trailing 500-transaction window exceeds the baseline by five binomial standard deviations; λ<sub>s</sub> is a truncated Kelly plug-in; the e-detector is Shiryaev–Roberts with γ fixed from the baseline and A = 10⁴. Two conveniences are specific to the demo: a candidate not established within 4,000 transactions is dropped, and in automatic mode a new ring starts 1,600–2,500 transactions after each expiration alarm.</p>
+  </div>
+</section>
+
+<section id="closing">
+  <div class="wrap">
+    <p class="closing" style="margin:0">An autonomous scientist in an adversarial world must do more than discover what is true. It must <em>know which of its discoveries still describe the world.</em></p>
+  </div>
+</section>
+
+<!-- ================= CITE ================= -->
+<section id="cite" style="border-bottom:0;padding-bottom:110px">
+  <div class="wrap">
+    <h2>Cite</h2>
+    <div class="card bib">
+      <button class="tb" id="copyBib">Copy</button>
+<pre id="bibtex">@inproceedings{goldmankalaydin2026discoveries,
+  title     = {Discoveries Have Lifetimes: E-Values for Autonomous
+               Discovery in Adversarial Environments},
+  author    = {Goldman-Kalaydin, Pavel and Shebanov, Vyacheslav},
+  booktitle = {NeurIPS 2026 Workshop on E-Values},
+  year      = {2026}
+}</pre>
+    </div>
+    <div class="refs">
+      <p>Shin, Ramdas, Rinaldo. E-detectors: a nonparametric framework for sequential change detection. NEJSDS, 2023.</p>
+      <p>Ramdas, Grünwald, Vovk, Shafer. Game-theoretic statistics and safe anytime-valid inference. Statistical Science, 2023.</p>
+      <p>Huang et al. Automated hypothesis validation with agentic sequential falsifications (POPPER). ICML, 2025.</p>
+      <p>Lunghi, Simitsis, Caelen, Bontempi. Adversarial learning in real-world fraud detection. arXiv:2307.01390, 2023.</p>
+      <p>Podkopaev, Ramdas. Tracking the risk of a deployed model and detecting harmful distribution shifts. ICLR, 2022.</p>
+      <p>Perdomo, Zrnic, Mendler-Dünner, Hardt. Performative prediction. ICML, 2020.</p>
+      <p>Agarwal et al. AutoDiscovery: open-ended scientific discovery via Bayesian surprise. NeurIPS, 2025.</p>
+      <p>Agarwal et al. Evidence-informed LLM beliefs for continual scientific discovery. arXiv:2606.29182, 2026.</p>
+    </div>
+  </div>
+</section>
+
+
+
+<script>
+/* ================= nav ================= */
+const nav=document.getElementById('nav');
+addEventListener('scroll',()=>nav.classList.toggle('scrolled',scrollY>10),{passive:true});
+document.getElementById('copyBib').onclick=e=>{
+  navigator.clipboard.writeText(document.getElementById('bibtex').textContent).then(()=>{e.target.textContent='Copied';setTimeout(()=>e.target.textContent='Copy',1400)});
+};
+
+/* ================= simulation ================= */
+const T=16000, BASE=3000, WIN=500, ROLL=400, P0=0.01, PH=0.03, A=1e4, SIGMA=5, DROP_AFTER=4000;
+const C={ink:'#232323',ink2:'#4B4B4B',muted:'#8A8983',faint:'#B9B7B0',line:'#E9E7E1',amber:'#F5B335',amberInk:'#B97A06',amberSoft:'rgba(245,179,53,.16)'};
+
+const P={p1:.06,delay:400,auto:true,persist:false,alpha:.05,speed:40,truth:true};
+let S, playing=true, raf=null;
+
+function rng(seed){return function(){seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+
+function newState(){
+  const seed=(Math.random()*1e9)|0;
+  return {
+    t:0, rand:rng(seed),
+    z:new Uint8Array(T), roll:new Float32Array(T).fill(NaN),
+    logM:new Float32Array(T).fill(NaN), logR:new Float32Array(T).fill(NaN),
+    winSum:0, rollSum:0, baseSum:0, pBase:null, thr:null, gamma:null, sd:null,
+    phase:'warmup', cooldownUntil:0,
+    active:false, strategies:[], nextOnset:3500+Math.floor(Math.random()*400), stopAt:null,
+    hyps:[], cur:null, log:[]
+  };
+}
+function logEv(t,msg,hl){S.log.unshift({t,msg,hl});renderLog()}
+
+function startStrategy(t,manual){
+  if(S.active) return;
+  S.active=true; S.stopAt=null; S.nextOnset=null;
+  S.strategies.push({on:t,off:null,p:P.p1});
+  logEv(t,`[latent] ring ${S.strategies.length} becomes active${manual?' (manual)':''}`);
+}
+function stopStrategy(t,why){
+  if(!S.active) return;
+  S.active=false; S.stopAt=null;
+  S.strategies[S.strategies.length-1].off=t;
+  logEv(t,`[latent] ring stops${why?' ('+why+')':''}`);
+}
+
+function step(){
+  const t=S.t; if(t>=T) return false;
+  // adversary
+  if(P.auto && !S.active && S.nextOnset!==null && t>=S.nextOnset) startStrategy(t,false);
+  if(S.active && S.stopAt!==null && t>=S.stopAt && !P.persist) stopStrategy(t,'after block');
+  const rate=S.active?S.strategies[S.strategies.length-1].p:P0;
+  const z=S.rand()<rate?1:0; S.z[t]=z;
+  // windows
+  S.winSum+=z; if(t>=WIN) S.winSum-=S.z[t-WIN];
+  S.rollSum+=z; if(t>=ROLL) S.rollSum-=S.z[t-ROLL];
+  if(t>=ROLL-1) S.roll[t]=S.rollSum/ROLL;
+
+  // generator / e-process / e-detector
+  if(S.phase==='warmup'){
+    S.baseSum+=z;
+    if(t===BASE-1){
+      S.pBase=Math.max(S.baseSum/BASE,1e-3);
+      S.sd=Math.sqrt(WIN*S.pBase*(1-S.pBase));
+      S.thr=WIN*S.pBase+SIGMA*S.sd;
+      S.gamma=Math.min(Math.max((PH-S.pBase)/(PH*(1-PH)),0.05),0.9/(1-PH));
+      S.phase='scan';
+      logEv(t,`baseline match rate estimated: ${S.pBase.toFixed(4)} (γ = ${S.gamma.toFixed(2)})`);
+    }
+  } else if(S.phase==='scan'){
+    if(S.winSum>S.thr){
+      const id='H'+(S.hyps.length+1);
+      const h={id,tProp:t,tEst:null,tExp:null,M:1,n:0,s:0,R:0,maxLogM:0,status:'candidate',onset:null,off:null};
+      const last=S.strategies[S.strategies.length-1];
+      if(last && (last.off===null || last.off>t-WIN)) h.onset=last.on;
+      S.hyps.push(h); S.cur=h; S.phase='candidate';
+      logEv(t,`${id} proposed: last ${WIN} transactions are ${((S.winSum-WIN*S.pBase)/S.sd).toFixed(1)}σ above baseline`,true);
+      renderRegistry();
+    }
+  } else if(S.phase==='candidate'){
+    const h=S.cur;
+    const k=50, ph=(h.s+PH*k)/(h.n+k);
+    const lam=Math.min(Math.max((ph-PH)/(PH*(1-PH)),0),0.5/PH);
+    h.M*=1+lam*(z-PH); h.n++; h.s+=z;
+    const lm=Math.log10(h.M); S.logM[t]=lm; h.maxLogM=Math.max(h.maxLogM,lm);
+    if(h.M>=1/P.alpha){
+      h.tEst=t; h.status='current'; S.phase='current';
+      logEv(t,`${h.id} established: Mₜ = ${h.M.toFixed(1)} ≥ 1/α, status → current`,true);
+      logEv(t,`blocking rule deployed for ${h.id}`);
+      if(S.active && !P.persist) S.stopAt=t+P.delay;
+      renderRegistry();
+    } else if(t-h.tProp>DROP_AFTER){
+      h.status='dropped'; S.phase='cooldown'; S.cooldownUntil=t+WIN;
+      logEv(t,`${h.id} dropped: not established within ${DROP_AFTER.toLocaleString('en')} transactions`);
+      renderRegistry();
+    }
+  } else if(S.phase==='current'){
+    const h=S.cur;
+    h.R=(1+h.R)*(1+S.gamma*(PH-z));
+    S.logR[t]=Math.log10(Math.max(h.R,1e-3));
+    if(h.R>=A){
+      h.tExp=t; h.status='expired'; S.phase='cooldown'; S.cooldownUntil=t+WIN;
+      const st=S.strategies[S.strategies.length-1]; if(st && st.off!==null) h.off=st.off;
+      logEv(t,`${h.id} expiration alarm: Rₜ ≥ 10⁴, status → expired; search resumes`,true);
+      if(P.auto) S.nextOnset=t+1600+Math.floor(S.rand()*900);
+      renderRegistry(); updateMetrics(h);
+    }
+  } else if(S.phase==='cooldown'){
+    if(t>=S.cooldownUntil){S.phase='scan'}
+  }
+  S.t++;
+  return true;
+}
+
+/* ================= rendering ================= */
+const cv=document.getElementById('chart'), ctx=cv.getContext('2d');
+let W=0,H=420,dpr=1,hoverX=null;
+function resize(){
+  dpr=window.devicePixelRatio||1; W=cv.clientWidth;
+  H=Math.max(360,Math.min(440,W*0.55));
+  cv.width=W*dpr; cv.height=H*dpr; cv.style.height=H+'px';
+  ctx.setTransform(dpr,0,0,dpr,0,0); draw();
+}
+const pad={l:52,r:18,t:22,b:30};
+function draw(){
+  if(!S) return;
+  ctx.clearRect(0,0,W,H);
+  const iw=W-pad.l-pad.r;
+  const gap=26, top={y:pad.t,h:(H-pad.t-pad.b-gap)*0.38}, bot={y:0,h:0};
+  bot.y=top.y+top.h+gap; bot.h=H-pad.b-bot.y;
+  const X=t=>pad.l+t/T*iw;
+  const yTop=v=>top.y+top.h-(v/0.12)*top.h;
+  const LMIN=-1.5,LMAX=5.2;
+  const yBot=v=>bot.y+bot.h-((Math.max(LMIN,Math.min(LMAX,v))-LMIN)/(LMAX-LMIN))*bot.h;
+
+  ctx.font='11px "JetBrains Mono", monospace'; ctx.textBaseline='middle';
+
+  // latent truth bands
+  if(P.truth){
+    for(const s of S.strategies){
+      const x0=X(s.on), x1=X(s.off===null?S.t:s.off);
+      ctx.fillStyle=C.amberSoft; ctx.fillRect(x0,top.y,x1-x0,top.h);
+      ctx.fillStyle='rgba(245,179,53,.06)'; ctx.fillRect(x0,bot.y,x1-x0,bot.h);
+      if(x1-x0>110){ctx.fillStyle=C.amberInk;ctx.textAlign='left';ctx.fillText('ring active (latent)',x0+6,top.y+10)}
+    }
+  }
+  // baseline estimation region
+  ctx.fillStyle='rgba(0,0,0,.025)'; ctx.fillRect(X(0),top.y,X(BASE)-X(0),top.h);
+  ctx.fillStyle=C.faint; ctx.textAlign='left'; ctx.fillText('baseline estimation',X(0)+6,top.y+10);
+
+  // axes / grid
+  ctx.strokeStyle=C.line; ctx.lineWidth=1;
+  [0,0.03,0.06,0.09,0.12].forEach(v=>{ctx.beginPath();ctx.moveTo(pad.l,yTop(v));ctx.lineTo(W-pad.r,yTop(v));ctx.stroke()});
+  [-1,0,1,2,3,4,5].forEach(v=>{ctx.beginPath();ctx.moveTo(pad.l,yBot(v));ctx.lineTo(W-pad.r,yBot(v));ctx.stroke()});
+  ctx.fillStyle=C.muted; ctx.textAlign='right';
+  [0,0.03,0.06,0.09,0.12].forEach(v=>ctx.fillText(v.toFixed(2),pad.l-8,yTop(v)));
+  [-1,0,1,2,3,4,5].forEach(v=>ctx.fillText(v,pad.l-8,yBot(v)));
+  ctx.save();ctx.translate(13,top.y+top.h/2);ctx.rotate(-Math.PI/2);ctx.textAlign='center';ctx.fillText('match rate of Z_H',0,0);ctx.restore();
+  ctx.save();ctx.translate(13,bot.y+bot.h/2);ctx.rotate(-Math.PI/2);ctx.textAlign='center';ctx.fillText('log₁₀ statistic',0,0);ctx.restore();
+  // x ticks
+  ctx.textAlign='center';
+  for(let v=0;v<=T;v+=2000){ctx.fillText(v.toLocaleString('en'),X(v),H-pad.b+16)}
+
+  // pH line
+  ctx.setLineDash([4,4]); ctx.strokeStyle=C.amberInk; ctx.beginPath();ctx.moveTo(pad.l,yTop(PH));ctx.lineTo(W-pad.r,yTop(PH));ctx.stroke();
+  ctx.fillStyle=C.amberInk; ctx.textAlign='left'; ctx.fillText('p_H',pad.l+6,yTop(PH)+9);
+  // thresholds
+  const la=Math.log10(1/P.alpha);
+  ctx.strokeStyle=C.ink2; ctx.beginPath();ctx.moveTo(pad.l,yBot(la));ctx.lineTo(W-pad.r,yBot(la));ctx.stroke();
+  ctx.fillStyle=C.ink2; ctx.textAlign='left'; ctx.fillText('1/α = '+Math.round(1/P.alpha),pad.l+6,yBot(la)-8);
+  ctx.strokeStyle=C.amberInk; ctx.beginPath();ctx.moveTo(pad.l,yBot(4));ctx.lineTo(W-pad.r,yBot(4));ctx.stroke();
+  ctx.fillStyle=C.amberInk; ctx.fillText('A = 10⁴',pad.l+6,yBot(4)-8);
+  ctx.setLineDash([]);
+
+  // series
+  const stepPx=Math.max(1,Math.floor(T/iw/1.5));
+  function series(arr,yf,color,width){
+    ctx.strokeStyle=color; ctx.lineWidth=width; ctx.beginPath(); let pen=false;
+    for(let t=0;t<S.t;t+=stepPx){
+      const v=arr[t]; if(isNaN(v)){pen=false;continue}
+      const x=X(t),y=yf(v); if(!pen){ctx.moveTo(x,y);pen=true}else ctx.lineTo(x,y);
+    }
+    ctx.stroke(); ctx.lineWidth=1;
+  }
+  series(S.roll,yTop,C.ink2,1.3);
+  series(S.logM,yBot,C.ink,1.6);
+  series(S.logR,yBot,C.amber,1.8);
+
+  // event markers
+  ctx.font='10px "JetBrains Mono", monospace';
+  for(const h of S.hyps){
+    const marks=[[h.tProp,'proposed',C.muted],[h.tEst,'deployed',C.ink],[h.tExp,'expired',C.amberInk]];
+    for(const [tm,lab,col] of marks){
+      if(tm===null) continue; const x=X(tm);
+      ctx.strokeStyle=col; ctx.setLineDash([2,3]); ctx.beginPath(); ctx.moveTo(x,top.y); ctx.lineTo(x,bot.y+bot.h); ctx.stroke(); ctx.setLineDash([]);
+      ctx.fillStyle=col; ctx.beginPath(); ctx.arc(x,bot.y+bot.h,2.5,0,7); ctx.fill();
+    }
+    // labels stacked to avoid overlap
+    const lbls=[[h.tProp,`${h.id} proposed`,C.muted,0],[h.tEst,'established',C.ink,1],[h.tExp,`${h.id} expired`,C.amberInk,2]];
+    for(const [tm,lab,col,row] of lbls){
+      if(tm===null) continue; const x=X(tm);
+      ctx.fillStyle=col; ctx.textAlign='left';
+      const y=bot.y+12+row*13;
+      const w=ctx.measureText(lab).width+8;
+      const lx0=(x+3+w>W-pad.r)?x-3-w:x+3;
+      ctx.fillStyle='rgba(255,255,255,.9)'; ctx.fillRect(lx0,y-6,w,12);
+      ctx.fillStyle=col; ctx.fillText(lab,lx0+4,y);
+    }
+  }
+  // legend
+  ctx.font='11px "JetBrains Mono", monospace'; ctx.textAlign='left';
+  const lx=pad.l+8, ly=H-pad.b-12;
+  ctx.fillStyle=C.ink; ctx.fillRect(lx,ly-1,14,2); ctx.fillText('e-process Mₜ',lx+20,ly);
+  ctx.fillStyle=C.amber; ctx.fillRect(lx+130,ly-1,14,2); ctx.fillStyle=C.amberInk; ctx.fillText('e-detector Rₜ',lx+150,ly);
+
+  // playhead
+  if(S.t<T){ctx.strokeStyle='rgba(0,0,0,.15)';ctx.beginPath();ctx.moveTo(X(S.t),top.y);ctx.lineTo(X(S.t),bot.y+bot.h);ctx.stroke()}
+
+  // hover
+  const ro=document.getElementById('readout');
+  if(hoverX!==null){
+    const t=Math.round((hoverX-pad.l)/iw*T);
+    if(t>=0&&t<S.t){
+      ctx.strokeStyle='rgba(0,0,0,.35)';ctx.beginPath();ctx.moveTo(X(t),top.y);ctx.lineTo(X(t),bot.y+bot.h);ctx.stroke();
+      const f=v=>isNaN(v)?'—':v.toFixed(2);
+      ro.innerHTML=`t = ${t.toLocaleString('en')}<br>match rate (last ${ROLL}) ${isNaN(S.roll[t])?'—':S.roll[t].toFixed(3)}<br>log₁₀ M ${f(S.logM[t])} · log₁₀ R ${f(S.logR[t])}`;
+    } else ro.innerHTML='';
+  } else ro.innerHTML='';
+}
+cv.addEventListener('mousemove',e=>{const r=cv.getBoundingClientRect();hoverX=e.clientX-r.left;if(!playing)draw()});
+cv.addEventListener('mouseleave',()=>{hoverX=null;if(!playing)draw()});
+
+/* ================= UI state ================= */
+function setPipeline(){
+  const map={warmup:'generate',scan:'generate',candidate:'eproc',current:'edet',cooldown:'expired'};
+  const lit=map[S.phase];
+  document.querySelectorAll('#pipeline .chip').forEach(c=>{
+    const s=c.dataset.s;
+    const on = s===lit || (S.phase==='current' && s==='discovery');
+    c.classList.toggle('lit',on);
+    c.classList.toggle('amber',on && (s==='edet'||s==='eproc'));
+  });
+  const last=S.hyps[S.hyps.length-1];
+  document.getElementById('crumbH').textContent=(S.phase==='candidate'||S.phase==='current')&&last?`${last.id} · ${last.status}`:(S.phase==='warmup'?'estimating baseline':'scanning for candidates');
+  document.getElementById('crumbT').textContent='t = '+S.t.toLocaleString('en');
+  document.getElementById('launch').disabled=S.active||S.t>=T;
+  document.getElementById('abandon').disabled=!S.active||S.t>=T;
+}
+function evidenceText(h){
+  if(h.status==='candidate') return `accumulating · M=${h.M.toFixed(1)}`;
+  if(h.status==='current') return `M≥${(1/P.alpha).toFixed(0)} · R=${h.R<10?h.R.toFixed(1):h.R.toExponential(0)}`;
+  if(h.status==='expired') return `alarm · R≥10⁴`;
+  return 'not established';
+}
+function renderRegistry(){
+  const tb=document.querySelector('#registry tbody');
+  if(!S.hyps.length){tb.innerHTML='<tr><td colspan="3" style="color:var(--faint)">empty</td></tr>';return}
+  tb.innerHTML=S.hyps.slice().reverse().map(h=>`<tr><td class="mono">${h.id}</td><td class="mono" style="font-size:11px;color:var(--ink-2)">${evidenceText(h)}</td><td><span class="pill ${h.status}">${h.status}</span></td></tr>`).join('');
+}
+function renderLog(){
+  const el=document.getElementById('log');
+  el.innerHTML=S.log.length?S.log.slice(0,60).map(e=>`<div class="${e.hl?'hl':''}"><span>${e.t.toLocaleString('en')}</span><span>${e.msg}</span></div>`).join(''):'<span class="empty">waiting for the stream…</span>';
+}
+function updateMetrics(h){
+  const set=(id,bid,v,max)=>{document.getElementById(id).innerHTML=v===null?'—':`${v}<small>tx</small>`;document.getElementById(bid).style.width=v===null?'0':Math.min(100,v/max*100)+'%'};
+  set('mProp','bProp',h.onset!==null?h.tProp-h.onset:null,600);
+  set('mEst','bEst',h.tEst!==null?h.tEst-h.tProp:null,1200);
+  set('mExp','bExp',(h.tExp!==null&&h.off!==null)?h.tExp-h.off:null,2000);
+}
+
+function frame(){
+  if(playing){
+    let n=P.speed, live=true;
+    while(n-- && (live=step()));
+    const h=S.cur; if(h && h.status!=='expired') {updateMetrics(h); if(S.t%200<P.speed) renderRegistry()}
+    if(!live || S.t>=T){
+      playing=false; setPlayBtn();
+      if(S.active) logEv(S.t,'end of simulated stream');
+    }
+  }
+  setPipeline(); draw();
+  raf=requestAnimationFrame(frame);
+}
+function setPlayBtn(){
+  const b=document.getElementById('play');
+  b.textContent=playing?'❚❚ Pause':(S.t>=T?'▶ Replay':'▶ Play');
+  b.classList.toggle('on',!playing);
+}
+function reset(){
+  S=newState(); renderRegistry(); renderLog();
+  ['mProp','mEst','mExp'].forEach(id=>document.getElementById(id).innerHTML='—');
+  ['bProp','bEst','bExp'].forEach(id=>document.getElementById(id).style.width='0');
+  draw();
+}
+
+document.getElementById('play').onclick=()=>{
+  if(S.t>=T){reset();playing=true}else playing=!playing;
+  setPlayBtn();
+};
+document.getElementById('reset').onclick=()=>{reset();playing=true;setPlayBtn()};
+document.getElementById('launch').onclick=()=>{startStrategy(S.t,true)};
+document.getElementById('abandon').onclick=()=>{stopStrategy(S.t,'manual')};
+
+const bind=(id,key,fmt,parse=parseFloat)=>{const el=document.getElementById(id),out=document.getElementById('v'+id[0].toUpperCase()+id.slice(1));
+  const upd=()=>{P[key]=parse(el.value);out.textContent=fmt(P[key])};el.addEventListener('input',upd);upd()};
+bind('p1','p1',v=>v.toFixed(3));
+bind('delay','delay',v=>v+' tx',v=>parseInt(v));
+bind('speed','speed',v=>v+' tx/frame',v=>parseInt(v));
+document.getElementById('auto').onchange=e=>{P.auto=e.target.checked; if(P.auto&&S.nextOnset===null&&!S.active) S.nextOnset=S.t+300};
+document.getElementById('persist').onchange=e=>{P.persist=e.target.checked; if(!P.persist&&S.active&&S.cur&&S.cur.status==='current') S.stopAt=S.t+P.delay};
+document.getElementById('truth').onchange=e=>{P.truth=e.target.checked;draw()};
+document.querySelectorAll('#alphaSeg button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('#alphaSeg button').forEach(x=>x.classList.remove('on'));b.classList.add('on');
+  P.alpha=parseFloat(b.dataset.a);document.getElementById('vAlpha').textContent=`${b.textContent} → 1/α = ${Math.round(1/P.alpha)}`;
+});
+
+/* ================= validity checks ================= */
+function kellyLam(s,n){const k=50,ph=(s+PH*k)/(n+k);return Math.min(Math.max((ph-PH)/(PH*(1-PH)),0),0.5/PH)}
+document.getElementById('runNull').onclick=()=>{
+  const N=500,L=5000,thr=1/P.alpha,r=rng((Math.random()*1e9)|0);let cross=0;
+  for(let i=0;i<N;i++){let M=1,s=0,n=0;for(let t=0;t<L;t++){const z=r()<PH?1:0;M*=1+kellyLam(s,n)*(z-PH);s+=z;n++;if(M>=thr){cross++;break}}}
+  document.getElementById('resNull').innerHTML=`<span class="big">${cross}<span style="color:var(--faint)"> / ${N}</span></span><span class="sub">crossed 1/α = ${thr} (${(cross/N*100).toFixed(1)}% observed)<br>theoretical bound: ≤ ${(P.alpha*100).toFixed(0)}% at α = ${P.alpha}</span>`;
+};
+document.getElementById('runPersist').onclick=()=>{
+  const N=200,L=5000,thr=1/P.alpha,r=rng((Math.random()*1e9)|0);
+  const g=S&&S.gamma?S.gamma:(PH-P0)/(PH*(1-PH));
+  let est=0,alarms=0,estT=0;
+  for(let i=0;i<N;i++){
+    let M=1,s=0,n=0,t=0;
+    for(;t<4000;t++){const z=r()<P.p1?1:0;M*=1+kellyLam(s,n)*(z-PH);s+=z;n++;if(M>=thr)break}
+    if(M<thr) continue; est++; estT+=t;
+    let R=0;for(let u=0;u<L;u++){const z=r()<P.p1?1:0;R=(1+R)*(1+g*(PH-z));if(R>=A){alarms++;break}}
+  }
+  document.getElementById('resPersist').innerHTML=`<span class="big">${est}<span style="color:var(--faint)"> / ${N}</span></span><span class="sub">established (mean ${est?Math.round(estT/est):'—'} transactions)<br><b style="color:var(--ink)">${alarms}</b> of these raised a false expiration alarm within 5,000 transactions (match rate ${P.p1.toFixed(3)})</span>`;
+};
+
+/* ================= boot ================= */
+reset(); resize(); addEventListener('resize',resize);
+// start playing only when the demo scrolls into view
+playing=false; setPlayBtn();
+new IntersectionObserver((es,obs)=>{es.forEach(e=>{if(e.isIntersecting){playing=true;setPlayBtn();obs.disconnect()}})},{threshold:.35}).observe(cv);
+frame();
+</script>
+</body>
+</html>
